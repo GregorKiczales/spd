@@ -207,7 +207,9 @@
      (check-types '@signature (syntax-e #'(arg ...)) (syntax->datum #'(arg ...)))
      (with-stepper-syntax-properties (['stepper-skip-completely #t]
                                       ['stepper-hide-reduction #t])
-       #'(void))]))
+       #'(void))]
+    [(_ arg ...)
+     (raise-syntax-error '@signature "missing -> in signature" stx stx)]))
 
 
 (define-for-syntax (check-template-origin stx)    
