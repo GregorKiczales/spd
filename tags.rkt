@@ -209,7 +209,7 @@
                                       ['stepper-hide-reduction #t])
        #'(void))]
     [(_ arg ...)
-     (raise-syntax-error '@signature "missing -> in signature" stx stx)]))
+     (raise-syntax-error '@signature "malformed signature" stx stx)]))
 
 
 (define-for-syntax (check-template-origin stx)    
