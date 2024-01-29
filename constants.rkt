@@ -2,6 +2,7 @@
 
 
 (provide @TAGS
+         ATOMIC-TYPES
          PRIMITIVE-TYPES
          DD-TEMPLATE-RULES
          NON-TYPE-TEMPLATE-ORIGINS)
@@ -12,11 +13,8 @@
                 @htdw @htdd
                 @htdf @signature @dd-template-rules @template-origin @template))
 
-
-(define PRIMITIVE-TYPES
-  '(Number Integer Natural String Boolean Image Color Scene
-           1String
-           KeyEvent MouseEvent))
+(define    ATOMIC-TYPES '(Number Integer Natural String 1String Boolean Image Color Scene))
+(define PRIMITIVE-TYPES (append ATOMIC-TYPES '(KeyEvent MouseEvent)))
 
 (define DD-TEMPLATE-RULES
   '(atomic-non-distinct atomic-distinct one-of compound self-ref ref))
