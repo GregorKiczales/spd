@@ -286,7 +286,8 @@
          (when (and (not (member type PRIMITIVE-TYPES))
                     (not (lookup-htdd type))
                     (not (and (symbol? type)
-                              (= (string-length (symbol->string type)) 1))))
+                              (= (string-length (symbol->string type)) 1)
+                              (char-upper-case? (string-ref (symbol->string type) 0)))))
 	       
            (raise-syntax-error who
                                (format "~a is not a primitive type, cannot find an @htdd tag for it, and it is not a type parameter" type)
