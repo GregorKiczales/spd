@@ -13,25 +13,25 @@
 ;; @tags are checked for well-formedness and some reference checks during
 ;; syntax expansion, they expand to just (void) so that they don't
 ;; affect what values are printed when student code is run.
-;; 
+;;
 ;; The file structure parser pulls apart the syntax later, knowing the
 ;; tags are are well-formed.
 
 (provide @TAGS
-         NON-TYPE-TEMPLATE-ORIGINS	 
+         NON-TYPE-TEMPLATE-ORIGINS
 
          @assignment
          @cwl
-	 
-         @problem 
 
-         @htdw      
-         @htdd      
+         @problem
+
+         @htdw
+         @htdd
          @htdf
 
          @signature
-          
-         @dd-template-rules 
+
+         @dd-template-rules
          @template-origin
          @template
 
@@ -51,32 +51,32 @@
 (define-syntax (define-@tag-syntax stx)
   (syntax-case stx ()
     [(_ tag arity-string kind-string expander)
-     #`(define-syntax (tag stx)                 
+     #`(define-syntax (tag stx)
          (syntax-case stx ()
-           [(_)       
+           [(_)
             (raise-syntax-error #f (format "expected ~a ~a after ~a" arity-string kind-string 'tag) stx)]
-           [(_ . id)   
-            (set! TAGS (cons stx TAGS)) 
+           [(_ . id)
+            (set! TAGS (cons stx TAGS))
             (with-stepper-syntax-properties (['stepper-skip-completely #t]
                                              ['stepper-hide-reduction #t])
               #'(#%expression (expander . id)))]
-           [_ 
+           [_
             (raise-syntax-error #f (format "expected an open parenthesis before ~a" 'tag) stx)]))]))
-                                             
+
 
 (define-@tag-syntax @assignment                 "one" "assignment id"             expand-assignment)
 (define-@tag-syntax @cwl                 "one or two" "campus wide login"         expand-cwl)
 (define-@tag-syntax @problem                    "one" "integer greater than 0"    expand-problem)
 (define-@tag-syntax @htdf              "at least one" "function name"             expand-htdf)
 (define-@tag-syntax @htdd              "at least one" "type name"                 expand-htdd)
-(define-@tag-syntax @htdw                       "one" "type name"                 expand-htdw) 
+(define-@tag-syntax @htdw                       "one" "type name"                 expand-htdw)
 (define-@tag-syntax @signature         "at least one" "type name"                 expand-signature)
 (define-@tag-syntax @template-origin   "at least one" "template origin"           expand-template-origin)
 (define-@tag-syntax @template                   "one" "function template"         expand-template)
 (define-@tag-syntax @dd-template-rules "at least one" "data driven template rule" expand-dd-template-rules)
 
 
-(define-for-syntax STEPPER-VOID    
+(define-for-syntax STEPPER-VOID
   (with-stepper-syntax-properties (['stepper-skip-completely #t]
                                    ['stepper-hide-reduction #t])
     #'(void)))
@@ -136,7 +136,7 @@
                          (memq id (LOCAL-DEFINES))))
                 (raise-syntax-error id "Cannot find define for this function name" stx id-stx)])))]))
 
-(define-for-syntax (check-htdd stx)    
+(define-for-syntax (check-htdd stx)
   (syntax-case stx ()
     [(_ i ...)
      (for ([id-stx (syntax-e #'(i ...))])
@@ -153,7 +153,7 @@
 
 (define-for-syntax (check-assignment stx)
   (syntax-case stx ()
-    [(_ id) 
+    [(_ id)
      (unless (symbol? (syntax-e #'id))
        (raise-syntax-error '@assignment (format "~s has the wrong form for an assignment id" (syntax->datum #'id)) stx #'id))
      (with-stepper-syntax-properties (['stepper-skip-completely #t]
@@ -165,7 +165,7 @@
     [(_ id1)
      (unless (symbol? (syntax-e #'id1))
        (raise-syntax-error '@cwl (format "~a has the wrong form for a CWL" (syntax->datum #'id1)) stx #'id1))]
-    [(_ id1 id2) 
+    [(_ id1 id2)
      (let ()
        (unless (symbol? (syntax-e #'id1))
          (raise-syntax-error '@cwl (format "~a has the wrong form for a CWL" (syntax->datum #'id1)) stx #'id1))
@@ -212,7 +212,7 @@
      (raise-syntax-error '@signature "malformed signature" stx stx)]))
 
 
-(define-for-syntax (check-template-origin stx)    
+(define-for-syntax (check-template-origin stx)
   (syntax-case stx ()
     [(_ t ...)
      (let* ([t-stxs (syntax-e #'(t ...))]
@@ -248,7 +248,7 @@
                     (> (length (cadr datum)) 1))
          (raise-syntax-error '@template (format "~a is not a well-formed function definition template" datum) stx #'defn)))]))
 
-(define-for-syntax (check-htdw stx)    
+(define-for-syntax (check-htdw stx)
   (syntax-case stx ()
     [(_ stx)
      (let ([type (syntax->datum #'stx)])
@@ -258,7 +258,7 @@
               (raise-syntax-error '@htdw (format "~a is not a type name or (listof TypeName)" type) #'stx #'stx)]))]))
 
 
-(define-for-syntax (check-dd-template-rules stx)    
+(define-for-syntax (check-dd-template-rules stx)
   (syntax-case stx ()
     [(_ i ...)
      (for ([id-stx (syntax-e #'(i ...))])
@@ -285,15 +285,16 @@
         (else
          (when (and (not (member type PRIMITIVE-TYPES))
                     (not (lookup-htdd type))
+                    (not (eqv? type '_)) ;!!! put this bug back in on server to match clients
                     (not (and (symbol? type)
                               (= (string-length (symbol->string type)) 1)
                               (char-upper-case? (string-ref (symbol->string type) 0)))))
-	       
+
            (raise-syntax-error who
                                (format "~a is not a primitive type, cannot find an @htdd tag for it, and it is not a type parameter" type)
                                stx stx)))))
 
-(define-for-syntax (lookup-htdd id) 
+(define-for-syntax (lookup-htdd id)
   (let loop ([tags TAGS])
     (if (null? tags)
         #f
@@ -306,7 +307,7 @@
 
 (define-for-syntax (format-list l or?)
   (cond [(null? (cdr l))
-         (format "~a ~a" (if or? "or" "and") (car l))] 
+         (format "~a ~a" (if or? "or" "and") (car l))]
         [else
          (format "~a, ~a" (car l) (format-list (cdr l) or?))]))
 
@@ -331,7 +332,7 @@
   (syntax-case stx ()
     [(define (fn-name . id) body) (syntax-e #'fn-name)]
     [(define var-name val) #f]))
-  
+
 
 
 
